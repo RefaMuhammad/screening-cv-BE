@@ -1,0 +1,23 @@
+# Environments
+venv/
+env/
+.env
+.venv/
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Uploads & Temp
+uploads/*
+!uploads/.gitkeep
+temp/*
+!temp/.gitkeep
+
+# PaddleOCR Models
+~/.paddleocr/
+inference/
+
+# System
+.DS_Store
