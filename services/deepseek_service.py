@@ -1,5 +1,6 @@
 import os
 import json
+import datetime
 from openai import OpenAI
 from models.schemas import CandidateInfo, JobRequirement
 
@@ -15,6 +16,7 @@ class DeepSeekService:
         )
 
     def extract_candidate_info(self, cv_text: str, job_desc: str = "", job_title: str = "") -> CandidateInfo:
+        current_year = datetime.datetime.now().year
         role_alignment_instruction = ""
         if job_desc:
             role_alignment_instruction = f"""
@@ -42,7 +44,7 @@ class DeepSeekService:
         - If the candidate has NO relevant jobs, `total_relevant_experience_years` must be 0.
         
         RULES FOR EXPERIENCE DATES:
-        - If a job's end date is 'Recent', 'Present', or 'Now', assume the candidate is working there up to the current year (2024). Calculate the duration from the start date to the current year.
+        - If a job's end date is 'Recent', 'Present', or 'Now', assume the candidate is working there up to the current year ({current_year}). Calculate the duration from the start date to the current year ({current_year}).
         - If the start date is completely missing and you mathematically cannot calculate the total years, return null for 'duration_years' and 'total_relevant_experience_years'.
         
         {role_alignment_instruction}
