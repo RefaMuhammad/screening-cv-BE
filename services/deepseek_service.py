@@ -14,7 +14,7 @@ class DeepSeekService:
             base_url=base_url
         )
 
-    def extract_candidate_info(self, cv_text: str, job_desc: str = "") -> CandidateInfo:
+    def extract_candidate_info(self, cv_text: str, job_desc: str = "", job_title: str = "") -> CandidateInfo:
         role_alignment_instruction = ""
         if job_desc:
             role_alignment_instruction = f"""
@@ -34,6 +34,12 @@ class DeepSeekService:
         You are a recruitment document extraction assistant.
         Extract information only from the provided CV text.
         Do not invent missing facts.
+        
+        RULES FOR RELEVANT EXPERIENCE:
+        - The employer is hiring for the position of: "{job_title}".
+        - When calculating `total_relevant_experience_years`, you MUST ONLY sum the durations of jobs that are relevant to this target position.
+        - If a past job is completely unrelated (e.g. Software Engineer applying for a Chef role), do NOT include its duration in the total.
+        - If the candidate has NO relevant jobs, `total_relevant_experience_years` must be 0.
         
         RULES FOR EXPERIENCE DATES:
         - If a job's end date is 'Recent', 'Present', or 'Now', assume the candidate is working there up to the current year (2024). Calculate the duration from the start date to the current year.
