@@ -10,7 +10,7 @@ class CVParser:
         self.ocr_service = OCRService()
         self.ds_service = DeepSeekService()
 
-    def process_cv(self, filepath: str) -> dict:
+    def process_cv(self, filepath: str, job_desc: str = "") -> dict:
         filename = os.path.basename(filepath)
         
         # 1. Extract text or images
@@ -35,7 +35,7 @@ class CVParser:
             
         # 3. Extract info via DeepSeek
         print(f"[INFO] Extracting structured data via DeepSeek AI for {filename}...")
-        candidate_info = self.ds_service.extract_candidate_info(text)
+        candidate_info = self.ds_service.extract_candidate_info(text, job_desc)
         
         if candidate_info.candidate_name and candidate_info.candidate_name != "Unknown":
             print(f"[SUCCESS] AI extraction successful for {filename} (Name: {candidate_info.candidate_name})")

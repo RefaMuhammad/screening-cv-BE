@@ -63,12 +63,23 @@ class RuleEngine:
         else:
             visa_res = CriteriaResult(status="PASS", required="None", actual="N/A")
 
+        # 5. Role Alignment Check (AI Evaluated)
+        if candidate.role_alignment:
+            role_res = CriteriaResult(
+                status=candidate.role_alignment.status,
+                required="Role Description Alignment",
+                actual="AI Evaluated",
+                reason=candidate.role_alignment.reason
+            )
+        else:
+            role_res = CriteriaResult(status="REVIEW", required="Role Description Alignment", actual="N/A", reason="AI did not provide alignment evaluation")
+
         # Overall Status
-        statuses = [exp_res.status, skill_res.status, lang_res.status, visa_res.status]
+        statuses = [exp_res.status, skill_res.status, lang_res.status, visa_res.status, role_res.status]
         
         if "FAIL" in statuses:
             overall = "FAIL"
-            overall_reason = "Candidate failed one or more mandatory requirements."
+            overall_reason = "Candidate failed one or more mandatory requirements or explicitly violated role description knockouts."
         elif "REVIEW" in statuses:
             overall = "REVIEW"
             overall_reason = "Some criteria could not be fully verified and require human review."
@@ -84,7 +95,8 @@ class RuleEngine:
                 experience=exp_res,
                 skills=skill_res,
                 language=lang_res,
-                visa=visa_res
+                visa=visa_res,
+                role_alignment=role_res
             ),
             overall_reason=overall_reason,
             evidence_snippets=candidate.evidence

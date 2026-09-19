@@ -14,8 +14,23 @@ class DeepSeekService:
             base_url=base_url
         )
 
-    def extract_candidate_info(self, cv_text: str) -> CandidateInfo:
-        prompt = """
+    def extract_candidate_info(self, cv_text: str, job_desc: str = "") -> CandidateInfo:
+        role_alignment_instruction = ""
+        if job_desc:
+            role_alignment_instruction = f"""
+        EMPLOYER ROLE DESCRIPTION:
+        {job_desc}
+        
+        RULES FOR ROLE ALIGNMENT:
+        - Analyze the Employer Role Description above. Look for any explicit mandatory requirements (e.g., nationality, specific licenses, specific prior company types).
+        - If the candidate explicitly violates a strict requirement from the Role Description, set role_alignment.status to "FAIL" and provide the reason.
+        - If the requirement is unclear or the CV doesn't mention it, set status to "REVIEW".
+        - If the candidate meets the implicit/explicit requirements, or if no strict knockouts are found in the Role Description, set status to "PASS".
+        """
+        else:
+            role_alignment_instruction = 'Set role_alignment status to "PASS" and reason to "No role description provided".'
+
+        prompt = f"""
         You are a recruitment document extraction assistant.
         Extract information only from the provided CV text.
         Do not invent missing facts.
@@ -24,8 +39,10 @@ class DeepSeekService:
         - If a job's end date is 'Recent', 'Present', or 'Now', assume the candidate is working there up to the current year (2024). Calculate the duration from the start date to the current year.
         - If the start date is completely missing and you mathematically cannot calculate the total years, return null for 'duration_years' and 'total_relevant_experience_years'.
         
+        {role_alignment_instruction}
+
         You MUST return ONLY valid JSON matching this exact structure:
-        {
+        {{
             "candidate_name": "Full Name",
             "email": "email@example.com",
             "phone": "+123456",
@@ -37,18 +54,22 @@ class DeepSeekService:
             "relevant_experience_summary": "Brief summary",
             "evidence": ["Exact quote 1", "Exact quote 2"],
             "work_experience": [
-                {
+                {{
                     "job_title": "Title",
                     "company": "Company",
                     "start_date": "Jan 2020",
                     "end_date": "Present",
                     "duration_years": 3.5,
                     "relevant_skills": ["Skill 1"]
-                }
+                }}
             ],
-            "languages": [{"language": "English", "level": "C1"}],
-            "education": []
-        }
+            "languages": [{{"language": "English", "level": "C1"}}],
+            "education": [],
+            "role_alignment": {{
+                "status": "PASS",
+                "reason": "Meets requirements"
+            }}
+        }}
         """
         
         try:

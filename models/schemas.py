@@ -41,6 +41,10 @@ class JobRequirement(BaseModel):
     role_description: RoleDescription
 
 # Candidate extraction schema
+class RoleAlignment(BaseModel):
+    status: str = Field(default="REVIEW")
+    reason: str = Field(default="")
+
 class WorkExperience(BaseModel):
     job_title: str = Field(default="")
     company: str = Field(default="")
@@ -67,6 +71,7 @@ class CandidateInfo(BaseModel):
     visa_status: Optional[str] = Field(default="unknown")
     relevant_experience_summary: str = Field(default="")
     evidence: List[str] = Field(default_factory=list, description="Array of exact text snippets (strings) from the CV as evidence. Example: ['Worked 5 years in Dubai', 'Hold UAE Visa']")
+    role_alignment: Optional[RoleAlignment] = None
 
 # Screening Results Schema
 class CriteriaResult(BaseModel):
@@ -80,6 +85,7 @@ class Gate1Criteria(BaseModel):
     skills: CriteriaResult
     language: CriteriaResult
     visa: CriteriaResult
+    role_alignment: Optional[CriteriaResult] = None
 
 class Gate1Result(BaseModel):
     candidate_name: str

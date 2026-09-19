@@ -17,7 +17,8 @@ async def process_batch(job_req: JobRequirement, file_paths: List[str]) -> List[
             print(f"{'='*50}")
 
             # 1. Parse CV to CandidateInfo
-            parsed_data = parser.process_cv(filepath)
+            job_desc_text = job_req.role_description.text if job_req.role_description else ""
+            parsed_data = parser.process_cv(filepath, job_desc_text)
             candidate_info = parsed_data["candidate_info"]
             
             # 2. Run Gate 1 Rule Engine
