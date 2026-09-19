@@ -35,19 +35,31 @@ class RuleEngine:
         else:
             skill_res = CriteriaResult(status="FAIL", required=", ".join(mandatory_skills), actual="None", reason="No mandatory skills matched")
 
-        # 3. Language Check
-        # Simplified check for POC
+        # 3. Language Check (with CEFR hierarchy)
+        cefr_map = {"a1": 1, "a2": 2, "b1": 3, "b2": 4, "c1": 5, "c2": 6, "native": 7}
         req_langs = job.candidate_requirements.language_requirements
+        
         lang_res = CriteriaResult(status="REVIEW", required="Unknown", actual="Unknown", reason="Language status unclear")
         if req_langs:
             req_lang = req_langs[0].language.lower()
-            cand_langs = [l.language.lower() for l in candidate.languages]
-            if req_lang in cand_langs:
-                lang_res = CriteriaResult(status="PASS", required=req_langs[0].language, actual="Found in CV", reason="Candidate has required language")
+            req_level_str = req_langs[0].minimum_level.lower()
+            req_score = cefr_map.get(req_level_str, 0)
+            
+            # Find candidate's matching language
+            cand_lang_obj = next((l for l in candidate.languages if l.language.lower() == req_lang), None)
+            
+            if cand_lang_obj:
+                cand_level_str = cand_lang_obj.level.lower()
+                cand_score = cefr_map.get(cand_level_str, 0)
+                
+                if cand_score >= req_score:
+                    lang_res = CriteriaResult(status="PASS", required=f"{req_langs[0].language} ({req_langs[0].minimum_level})", actual=f"{cand_lang_obj.language} ({cand_lang_obj.level})", reason="Candidate meets or exceeds language proficiency")
+                else:
+                    lang_res = CriteriaResult(status="FAIL", required=f"{req_langs[0].language} ({req_langs[0].minimum_level})", actual=f"{cand_lang_obj.language} ({cand_lang_obj.level})", reason="Candidate proficiency is below requirement")
             else:
-                lang_res = CriteriaResult(status="REVIEW", required=req_langs[0].language, actual="Not found explicitly", reason="Required language not explicitly mentioned")
+                lang_res = CriteriaResult(status="REVIEW", required=f"{req_langs[0].language} ({req_langs[0].minimum_level})", actual="Not found explicitly", reason="Required language not explicitly mentioned")
         else:
-            lang_res = CriteriaResult(status="PASS", required="None", actual="N/A")
+            lang_res = CriteriaResult(status="PASS", required="None", actual="N/A", reason="No language requirement")
 
         # 4. Visa Check
         visa_req = job.candidate_requirements.visa_requirement

@@ -40,6 +40,10 @@ class DeepSeekService:
         - If the start date is completely missing and you mathematically cannot calculate the total years, return null for 'duration_years' and 'total_relevant_experience_years'.
         
         {role_alignment_instruction}
+        
+        RULES FOR LANGUAGES:
+        - For the `level` field in languages, you MUST normalize any proficiency description (like IELTS 7.5, TOEFL, Fluent, Native, Basic) into one of the following exact strings: "A1", "A2", "B1", "B2", "C1", "C2", or "Native".
+        - Examples: IELTS 4.0-5.0 -> B1, IELTS 5.5-6.5 -> B2, IELTS 7.0-8.0 -> C1, IELTS 8.5+ -> C2, Fluent -> C1, Basic -> A2.
 
         You MUST return ONLY valid JSON matching this exact structure:
         {{
